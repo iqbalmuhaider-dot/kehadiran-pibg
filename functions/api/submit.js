@@ -18,6 +18,24 @@ export async function onRequestPost(context) {
       });
     }
     
+    // Check if D1 is available
+    if (!env.DB) {
+      // Demo mode - log to console
+      console.log('DEMO MODE - Form submission:', data);
+      return new Response(JSON.stringify({
+        success: true,
+        id: Date.now(),
+        message: 'Pendaftaran berjaya! (Demo mode - D1 not configured)',
+        demo: true
+      }), {
+        status: 200,
+        headers: { 
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
+      });
+    }
+    
     // Insert into D1 database
     const stmt = env.DB.prepare(`
       INSERT INTO kehadiran_pibg (
