@@ -1,0 +1,19 @@
+name = "kehadiran-pibg"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+# D1 Database binding
+[[d1_databases]]
+binding = "DB"
+database_name = "kehadiran-pibg"
+database_id = "PENDING_CREATION"
+
+# Pages deployment
+[site]
+bucket = "./public"
+
+# Environment variables
+[vars]
+ENVIRONMENT = "production"
+EVENT_NAME = "Mesyuarat Agung PIBG & Sambutan Hari Raya"
+EVENT_DATE = "2026-04-11"

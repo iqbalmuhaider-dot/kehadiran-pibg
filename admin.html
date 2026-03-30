@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Kehadiran PIBG SK Masjid Tanah</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100">
+  <!-- Header -->
+  <header class="bg-green-600 text-white py-6 shadow-lg">
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-bold">📊 Admin Dashboard</h1>
+          <p class="text-green-100">Kehadiran PIBG & Jamuan Hari Raya - SK Masjid Tanah</p>
+        </div>
+        <button onclick="exportCSV()" class="bg-white text-green-600 px-6 py-3 rounded-lg font-semibold hover:bg-green-50 flex items-center gap-2">
+          <i data-lucide="download" class="w-5 h-5"></i>
+          Export CSV
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div class="bg-white rounded-xl shadow-lg p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-gray-500 text-sm mb-1">Total Pendaftaran</p>
+            <p id="totalRegistrations" class="text-4xl font-bold text-green-600">-</p>
+          </div>
+          <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+            <i data-lucide="users" class="w-8 h-8 text-green-600"></i>
+          </div>
+        </div>
+      </div>
+      
+      <div class="bg-white rounded-xl shadow-lg p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-gray-500 text-sm mb-1">Total Dewasa</p>
+            <p id="totalAdults" class="text-4xl font-bold text-blue-600">-</p>
+          </div>
+          <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+            <i data-lucide="user-check" class="w-8 h-8 text-blue-600"></i>
+          </div>
+        </div>
+      </div>
+      
+      <div class="bg-white rounded-xl shadow-lg p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-gray-500 text-sm mb-1">Total Murid</p>
+            <p id="totalStudents" class="text-4xl font-bold text-purple-600">-</p>
+          </div>
+          <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center">
+            <i data-lucide="graduation-cap" class="w-8 h-8 text-purple-600"></i>
+          </div>
+        </div>
+      </div>
+      
+      <div class="bg-white rounded-xl shadow-lg p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-gray-500 text-sm mb-1">Last Updated</p>
+            <p id="lastUpdated" class="text-lg font-bold text-gray-600">-</p>
+          </div>
+          <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
+            <i data-lucide="clock" class="w-8 h-8 text-gray-600"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <div class="bg-white rounded-xl shadow-lg p-6">
+        <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
+          <i data-lucide="circle-help" class="w-5 h-5 text-blue-600"></i>
+          Pendaftaran Mengikut Kelas
+        </h3>
+        <canvas id="classChart"></canvas>
+      </div>
+      
+      <div class="bg-white rounded-xl shadow-lg p-6">
+        <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
+          <i data-lucide="trending-up" class="w-5 h-5 text-green-600"></i>
+          Trend Pendaftaran
+        </h3>
+        <canvas id="trendChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Data Table -->
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+      <div class="p-6 border-b border-gray-200 flex items-center justify-between">
+        <h3 class="font-bold text-lg flex items-center gap-2">
+          <i data-lucide="table" class="w-5 h-5 text-gray-600"></i>
+          Senarai Pendaftaran
+        </h3>
+        <input type="text" id="searchInput" placeholder="Cari nama..." 
+          class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500">
+      </div>
+      
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Ibu Bapa</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Telefon</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bilangan</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Murid</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarikh</th>
+            </tr>
+          </thead>
+          <tbody id="dataTableBody" class="bg-white divide-y divide-gray-200">
+            <tr>
+              <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                <i data-lucide="loader" class="w-8 h-8 animate-spin mx-auto mb-2"></i>
+                Loading data...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    let allData = [];
+    let classChartInstance = null;
+    let trendChartInstance = null;
+
+    // Load data on page load
+    document.addEventListener('DOMContentLoaded', loadDashboard);
+
+    // Load dashboard data
+    async function loadDashboard() {
+      try {
+        const response = await fetch('/api/data');
+        if (!response.ok) throw new Error('Failed to load data');
+        
+        const data = await response.json();
+        allData = data.registrations;
+        
+        // Update stats
+        document.getElementById('totalRegistrations').textContent = data.stats.totalRegistrations;
+        document.getElementById('totalAdults').textContent = data.stats.totalAdults;
+        document.getElementById('totalStudents').textContent = data.stats.totalStudents;
+        document.getElementById('lastUpdated').textContent = new Date().toLocaleString('ms-MY');
+        
+        // Update table
+        renderTable(allData);
+        
+        // Update charts
+        updateClassChart(data.stats.byClass);
+        updateTrendChart(data.stats.byDate);
+        
+        lucide.createIcons();
+      } catch (error) {
+        console.error('Error loading dashboard:', error);
+        document.getElementById('dataTableBody').innerHTML = `
+          <tr>
+            <td colspan="6" class="px-6 py-8 text-center text-red-500">
+              <i data-lucide="alert-circle" class="w-8 h-8 mx-auto mb-2"></i>
+              Error loading data. Please check database connection.
+            </td>
+          </tr>
+        `;
+        lucide.createIcons();
+      }
+    }
+
+    // Render table
+    function renderTable(data) {
+      const tbody = document.getElementById('dataTableBody');
+      
+      if (data.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+              Tiada data pendaftaran
+            </td>
+          </tr>
+        `;
+        return;
+      }
+      
+      tbody.innerHTML = data.map(reg => `
+        <tr class="hover:bg-gray-50">
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">#${reg.id}</td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="font-semibold text-gray-900">${reg.parent_name}</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${reg.phone}</td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold">
+              ${reg.attendee_count} dewasa
+            </span>
+          </td>
+          <td class="px-6 py-4">
+            <div class="space-y-1">
+              ${JSON.parse(reg.students).map(s => `
+                <div class="text-sm">
+                  <span class="font-medium">${s.name}</span>
+                  <span class="text-gray-500">(${s.class})</span>
+                </div>
+              `).join('')}
+            </div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            ${new Date(reg.created_at).toLocaleDateString('ms-MY')}
+          </td>
+        </tr>
+      `).join('');
+      
+      lucide.createIcons();
+    }
+
+    // Update class chart
+    function updateClassChart(classData) {
+      const ctx = document.getElementById('classChart').getContext('2d');
+      
+      if (classChartInstance) {
+        classChartInstance.destroy();
+      }
+      
+      classChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: classData.map(c => c.class),
+          datasets: [{
+            label: 'Bilangan Murid',
+            data: classData.map(c => c.count),
+            backgroundColor: 'rgba(16, 185, 129, 0.7)',
+            borderColor: 'rgb(16, 185, 129)',
+            borderWidth: 2,
+            borderRadius: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { stepSize: 1 }
+            }
+          }
+        }
+      });
+    }
+
+    // Update trend chart
+    function updateTrendChart(dateData) {
+      const ctx = document.getElementById('trendChart').getContext('2d');
+      
+      if (trendChartInstance) {
+        trendChartInstance.destroy();
+      }
+      
+      trendChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: dateData.map(d => new Date(d.date).toLocaleDateString('ms-MY', { day: 'numeric', month: 'short' })),
+          datasets: [{
+            label: 'Pendaftaran',
+            data: dateData.map(d => d.count),
+            borderColor: 'rgb(59, 130, 246)',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            tension: 0.4,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { stepSize: 1 }
+            }
+          }
+        }
+      });
+    }
+
+    // Search functionality
+    document.getElementById('searchInput').addEventListener('input', function(e) {
+      const term = e.target.value.toLowerCase();
+      const filtered = allData.filter(reg => 
+        reg.parent_name.toLowerCase().includes(term) ||
+        reg.phone.includes(term) ||
+        reg.students.toLowerCase().includes(term)
+      );
+      renderTable(filtered);
+    });
+
+    // Export to CSV
+    function exportCSV() {
+      const headers = ['ID', 'Nama Ibu Bapa', 'No. Telefon', 'Bilangan Dewasa', 'Nama Murid', 'Kelas', 'Tarikh Daftar'];
+      const rows = allData.flatMap(reg => {
+        const students = JSON.parse(reg.students);
+        return students.map((s, index) => [
+          reg.id,
+          reg.parent_name,
+          reg.phone,
+          index === 0 ? reg.attendee_count : '',
+          s.name,
+          s.class,
+          new Date(reg.created_at).toLocaleDateString('ms-MY')
+        ]);
+      });
+      
+      const csv = [headers, ...rows].map(row => 
+        row.map(cell => `"${cell}"`).join(',')
+      ).join('\n');
+      
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `kehadiran-pibg-${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+    }
+
+    // Auto-refresh every 30 seconds
+    setInterval(loadDashboard, 30000);
+  </script>
+</body>
+</html>
