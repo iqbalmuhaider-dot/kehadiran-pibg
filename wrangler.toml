@@ -1,7 +1,13 @@
 name = "kehadiran-pibg"
 compatibility_date = "2024-01-01"
 
-# Pages deployment
+# D1 Database binding
+[[d1_databases]]
+binding = "DB"
+database_name = "kehadiran-pibg"
+database_id = "f626d922-0b4f-4164-a836-e73aaac77dec"
+
+# Environment variables
 [vars]
 ENVIRONMENT = "production"
 EVENT_NAME = "Mesyuarat Agung PIBG & Sambutan Hari Raya"
